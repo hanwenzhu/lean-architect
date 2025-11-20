@@ -107,7 +107,15 @@ def removeNameFirstComponent : Name → Option Name
 
 open MD4Lean in
 def parseMarkdown (markdown : String) : Option MD4Lean.Document :=
-  parse markdown (parserFlags := MD_DIALECT_GITHUB ||| MD_FLAG_LATEXMATHSPANS ||| MD_FLAG_NOHTML)
+  parse markdown (parserFlags :=
+    -- GitHub-flavored Markdown dialect
+    MD_DIALECT_GITHUB |||
+    -- Support $...$ and $$...$$
+    MD_FLAG_LATEXMATHSPANS |||
+    -- Disable raw HTML
+    MD_FLAG_NOHTML |||
+    -- Docstrings can be group indented, which we do not want to parse as code blocks
+    MD_FLAG_NOINDENTEDCODEBLOCKS)
 
 /-- Parse and convert markdown to LaTeX using MD4Lean with postprocessing steps as above. -/
 partial def markdownToLatex (markdown : String) : m Latex :=
@@ -129,7 +137,12 @@ where
     | .header level texts =>
       let headerCommand := match level with | 0 | 1 => "chapter" | 2 => "section" | 3 => "subsection" | 4 => "subsubsection" | 5 => "paragraph" | _ => "subparagraph"
       return "\\" ++ headerCommand ++ "{" ++ String.join (← texts.mapM textToLatex).toList ++ "}"
-    | .code _info _lang _fenceChar content => return "\\begin{verbatim}" ++ "\n\n".intercalate content.toList ++ "\\end{verbatim}"
+    | .code _info _lang _fenceChar content =>
+      -- It seems \begin{verbatim} ... \end{verbatim} is not supported in macros,
+      -- so we split to lines and convert each line as inline code.
+      let content := String.join content.toList
+      let lines ← (content.splitOn "\n").mapM fun line => textToLatex (.code #[line])
+      return "\n\\\\\n".intercalate lines
     | .html content => return String.join content.toList
     | .blockquote content => return "\\begin{quote}" ++ "\n\n".intercalate (← content.mapM blockToLatex).toList ++ "\\end{quote}"
     | .table _head _body => return "[blueprint-gen: table not supported yet]"
