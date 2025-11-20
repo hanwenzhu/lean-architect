@@ -1,11 +1,9 @@
-# blueprint-gen
+# lean-architect
 
-*This is a quick demo for a new blueprint tool for Lean. It is currently completely in proof-of-concept stage.*
-
-Blueprint-gen is a tool for generating the blueprint data of a Lean project directly from Lean.
+Lean-architect is a tool for generating the blueprint data of a Lean project directly from Lean.
 
 The blueprint is a high-level plan of a Lean project, consisting of a series of nodes (theorems and definitions) and the dependency relations between them.
-The purpose of blueprint-gen is to make it easier to write the blueprint by generating blueprint data directly from Lean.
+The purpose of lean-architect is to make it easier to write the blueprint by generating blueprint data directly from Lean.
 
 Start by annotating definitions and theorems in Lean with the `@[blueprint]` tag. They will then be exported to LaTeX, which you may then put in the blueprint.
 
@@ -15,19 +13,19 @@ This tool is built to complement [leanblueprint](https://github.com/PatrickMasso
 
 First, install [leanblueprint](https://github.com/PatrickMassot/leanblueprint) and follow the instructions there to set up a blueprint project using `leanblueprint new`, if not already done.
 
-Add blueprint-gen to the lakefile. For example:
+Add lean-architect to the lakefile. For example:
 
 ```toml
 [[require]]
-name = "blueprint-gen"
-git = "https://github.com/hanwenzhu/blueprint-gen.git"
+name = "lean-architect"
+git = "https://github.com/hanwenzhu/lean-architect.git"
 rev = "main"
 ```
 
-To generate the blueprint for a module, first `import BlueprintGen` and then annotate key theorems and definitions in the file with `@[blueprint]`:
+To extract the blueprint for a module, first `import Architect` and then annotate key theorems and definitions in the file with `@[blueprint]`:
 
 ```lean
-import BlueprintGen
+import Architect
 
 @[blueprint]
 theorem my_theorem : Foo Bar := by foo
@@ -35,7 +33,7 @@ theorem my_theorem : Foo Bar := by foo
 
 (See also a full example below.)
 
-Then input the generated blueprint source to the blueprint document (typically, `blueprint/src/content.tex`):
+Then input the extracted blueprint source to the blueprint document (typically, `blueprint/src/content.tex`):
 
 ```latex
 % This makes the macros `\inputleanmodule` and `\inputleannode` available.
@@ -58,13 +56,13 @@ leanblueprint pdf
 leanblueprint web
 ```
 
-If you see LaTeX errors here, you may need to manually fix some docstrings so that the generated LaTeX compiles.
+If you see LaTeX errors here, you may need to manually fix some docstrings so that the extracted LaTeX compiles.
 
 (See also the instructions for converting from an existing blueprint below.)
 
 ## Example
 
-This example is hosted at [blueprint-gen-example](https://github.com/hanwenzhu/blueprint-gen-example). Consider the following `MyNat` API:
+This example is hosted at [lean-architect-example](https://github.com/hanwenzhu/lean-architect-example). Consider the following `MyNat` API:
 
 ```lean
 -- Example/MyNat.lean
@@ -122,42 +120,58 @@ end MyNat
 
 The (automatic) output of the above example Lean script is:
 
-![Blueprint web](https://raw.githubusercontent.com/hanwenzhu/blueprint-gen-example/refs/heads/main/images/web.png)
+![Blueprint web](https://raw.githubusercontent.com/hanwenzhu/lean-architect-example/refs/heads/main/images/web.png)
 
 With dependency graph:
 
-![Depedency graph](https://raw.githubusercontent.com/hanwenzhu/blueprint-gen-example/refs/heads/main/images/depgraph.png)
+![Depedency graph](https://raw.githubusercontent.com/hanwenzhu/lean-architect-example/refs/heads/main/images/depgraph.png)
 
 ## Specifying the blueprint
 
-After tagging with `@[blueprint]`, blueprint-gen will:
+After tagging with `@[blueprint]`, lean-architect will:
 
 1. Extract the statement and proof of a node from docstrings.
 2. Infer the dependencies of a node from the constants used in the statement or proof.
 3. Infer whether the statement or proof is ready (i.e. `\leanok`) from whether it is sorry-free.
-4. Add the node to the generated blueprint.
+4. Add the node to the extracted blueprint.
 
 You may override the constants used in the statement or proof with the `uses` and `proofUses` options, or with the `using` tactic.
 
-To view the generated blueprint data of a node, use `@[blueprint?]`.
+To view the extracted blueprint data of a node, use `@[blueprint?]`.
 
 The Markdown [docstrings](https://leanprover-community.github.io/contribute/doc.html) will be automatically parsed and converted to LaTeX.
 Citations are supported using square brackets like `[wiles1995]`, and references to other Lean nodes can be done by inline code like `` `Lean.theorem_name` ``. The output can be modified by the options `blueprint.bracketedCitations`, `blueprint.refCommand` and `blueprint.citeCommand`. Raw LaTeX is also supported.
 
 ## Informal-only nodes
 
-At the start of a project, it is possible to have theorems or definitions in the blueprint, whose statements are not formalized in Lean.
-For these "informal-only nodes" without formal statements, you can write them in the LaTeX blueprint only, and for Lean theorems to reference the informal theorem (say with label `\label{thm}`), you may write `sorry_using ["thm"]`, `@[blueprint (uses := ["thm"])]`, etc.
+Especially at the start of a project, theorems or definitions may be written in LaTeX, and their statements are not ready to be formalized in Lean.
+Lean-architect supports mixing such *informal* nodes written in LaTeX with *formal* nodes written in Lean. Typically, the workflow of an entire project may look like this:
+
+1. Write a blueprint in LaTeX/Overleaf
+2. Set up a new Lean project with this blueprint
+3. Formalize a theorem `my_theorem` from LaTeX into Lean, and tag it with `@[blueprint]`
+4. Replace this theorem in LaTeX with `\inputleannode{my_theorem}`, and return to (3)
+
+One utility script for automating this replacement is (although you may prefer to do this manually):
+
+```sh
+# Convert from a LaTeX node that has a Lean corresponding part (i.e. with `\lean`)
+# to a `\inputleannode` command, and try to automatically tag the Lean part with
+# `@[blueprint]`.
+lake script run blueprintConvert --nodes <Lean name of node>
+```
+
+One specific case to note is when Lean theorems need to reference a informal theorem (say with label `\label{thm}`). Here, you may write the label in double quotes, such as `@[blueprint (uses := ["thm"])]`.
 
 ## Converting from existing blueprint format
 
-With a project that uses the existing leanblueprint format, there is a primitive script that tries to convert to the blueprint-gen format.
+With a project that uses the existing leanblueprint format, there is a primitive script that tries to convert to the lean-architect format.
 
 Currently, this script depends on a recent version of Python with `loguru` and `pydantic` installed (install by `pip3 install loguru pydantic`); and requires an installation of [Pandoc](https://pandoc.org) to be available.
 
 First go to a clean branch **without any uncomitted changes**, to prevent overwriting any work you have done.
 
-You can then convert to blueprint-gen format by adding `blueprint-gen` as a dependency to lakefile, run `lake update blueprint-gen`, ensure `leanblueprint checkdecls` works (i.e. all `\lean` are in Lean), and then run:
+You can then convert to lean-architect format by adding `lean-architect` as a dependency to lakefile, run `lake update lean-architect`, ensure `leanblueprint checkdecls` works (i.e. all `\lean` are in Lean), and then run:
 
 ```sh
 lake script run blueprintConvert
@@ -167,13 +181,13 @@ Note that this conversion is not perfect and not idempotent, and for large proje
 
 The informal-only nodes (nodes without `\lean`) are by default retained in LaTeX and not converted to Lean. If you want them to be converted, you may add `--convert_informal` to the command above, and then the script will convert them and save to the root Lean module.
 
-The conversion will remove the `\uses` information in LaTeX and let blueprint-gen automatically infer dependencies in Lean, unless the code contains `sorry` (in which case `uses :=` and `proofUses :=` will be added). If `--add_uses` is specified then all `\uses` information is retained in Lean.
+The conversion will remove the `\uses` information in LaTeX and let lean-architect automatically infer dependencies in Lean, unless the code contains `sorry` (in which case `uses :=` and `proofUses :=` will be added). If `--add_uses` is specified then all `\uses` information is retained in Lean.
 
 Docstrings are converted from LaTeX to Markdown using Pandoc. If there is informal description of a theorem in LaTeX and a docstring in Lean, they are concatenated to form the new docstring. You should tidy the existing Markdown docstrings (e.g. wrap code in backticks and math in dollar signs) for better rendering.
 
 You may use `--blueprint_root <root>` to specify the path to your blueprint, if it is not the default.
 
-(For reference, it takes a few minutes to convert [FLT](https://github.com/ImperialCollegeLondon/FLT) to blueprint-gen format and fix all errors, and it might take longer to fix all warnings and make the output look nicer.)
+(For reference, it takes a few minutes to convert [FLT](https://github.com/ImperialCollegeLondon/FLT) to lean-architect format and fix all errors, and it might take longer to fix all warnings and make the output look nicer.)
 
 ## GitHub Actions integration
 

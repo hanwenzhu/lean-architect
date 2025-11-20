@@ -1,5 +1,5 @@
 import Lean
-import BlueprintGen.Basic
+import Architect.Basic
 
 /-!
 This is similar to Lean's `collectAxioms`, but collects nodes in the blueprint (plus all axioms)
@@ -8,7 +8,7 @@ rather than just axioms.
 TODO: maybe run this at LaTeX output time rather than during @[blueprint] tagging
 -/
 
-namespace BlueprintGen
+namespace Architect
 
 open Lean
 
@@ -65,4 +65,4 @@ def collectUsed [Monad m] [MonadEnv m] [MonadError m] (constName : Name) :
 
   return (typeUsed, valueUsed \ typeUsed.erase ``sorryAx)
 
-end BlueprintGen
+end Architect

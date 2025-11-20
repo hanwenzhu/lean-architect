@@ -1,13 +1,13 @@
-import BlueprintGen.Basic
+import Architect.Basic
 
 
 open Lean Elab
 
-namespace BlueprintGen
+namespace Architect
 
 /-! The blueprint content in a module (see `BlueprintContent`) consists of:
 
-- Blueprint nodes generated from `@[blueprint]` tags
+- Blueprint nodes extracted  from `@[blueprint]` tags
 - All module docstrings defined in `/-! ... -/`
 
 These contents are sorted by declaration range (similar to the sort in doc-gen4).
@@ -47,4 +47,4 @@ def getBlueprintContents (module : Name) : CoreM (Array BlueprintContent) := do
   let modDocs := (getModuleDoc? env module).getD #[] |>.map BlueprintContent.modDoc
   return (nodes ++ modDocs).qsort BlueprintContent.order
 
-end BlueprintGen
+end Architect

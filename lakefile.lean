@@ -1,12 +1,12 @@
 import Lake
 open System Lake DSL
 
-package «blueprint-gen»
+package «lean-architect»
 
-lean_lib BlueprintGen
+lean_lib Architect
 
 @[default_target]
-lean_exe «blueprint-gen» where
+lean_exe extract_blueprint where
   root := `Main
   supportInterpreter := true
 
@@ -24,9 +24,9 @@ require MD4Lean from git
 require Cli from git
   "https://github.com/mhuisi/lean4-cli" @ "v4.24.0"
 
-/-- A facet to generate the blueprint for a module. -/
+/-- A facet to extract the blueprint for a module. -/
 module_facet blueprint (mod : Module) : Unit := do
-  let exeJob ← «blueprint-gen».fetch
+  let exeJob ← extract_blueprint.fetch
   let modJob ← mod.leanArts.fetch
   let buildDir := (← getRootPackage).buildDir
   let latexFile := mod.filePath (buildDir / "blueprint" / "module") "tex"
@@ -40,9 +40,9 @@ module_facet blueprint (mod : Module) : Unit := do
           env := ← getAugmentedEnv
         }
 
-/-- A facet to generate JSON data of blueprint for a module. -/
+/-- A facet to extract JSON data of blueprint for a module. -/
 module_facet blueprintJson (mod : Module) : Unit := do
-  let exeJob ← «blueprint-gen».fetch
+  let exeJob ← extract_blueprint.fetch
   let modJob ← mod.leanArts.fetch
   let buildDir := (← getRootPackage).buildDir
   let latexFile := mod.filePath (buildDir / "blueprint" / "module") "json"
@@ -56,11 +56,11 @@ module_facet blueprintJson (mod : Module) : Unit := do
           env := ← getAugmentedEnv
         }
 
-/-- A facet to generate the blueprint for a library. -/
+/-- A facet to extract the blueprint for a library. -/
 library_facet blueprint (lib : LeanLib) : Unit := do
   let mods ← (← lib.modules.fetch).await
   let moduleJobs := Job.collectArray <| ← mods.mapM (fetch <| ·.facet `blueprint)
-  let exeJob ← «blueprint-gen».fetch
+  let exeJob ← extract_blueprint.fetch
   let buildDir := (← getRootPackage).buildDir
   let latexFile := buildDir / "blueprint" / "library" / lib.name.toString |>.addExtension "tex"
   exeJob.bindM fun exeFile => do
@@ -73,11 +73,11 @@ library_facet blueprint (lib : LeanLib) : Unit := do
           env := ← getAugmentedEnv
         }
 
-/-- A facet to generate the JSON data for the blueprint for a library. -/
+/-- A facet to extract the JSON data for the blueprint for a library. -/
 library_facet blueprintJson (lib : LeanLib) : Unit := do
   let mods ← (← lib.modules.fetch).await
   let moduleJobs := Job.collectArray <| ← mods.mapM (fetch <| ·.facet `blueprintJson)
-  let exeJob ← «blueprint-gen».fetch
+  let exeJob ← extract_blueprint.fetch
   let buildDir := (← getRootPackage).buildDir
   let latexFile := buildDir / "blueprint" / "library" / lib.name.toString |>.addExtension "json"
   exeJob.bindM fun exeFile => do
@@ -90,13 +90,13 @@ library_facet blueprintJson (lib : LeanLib) : Unit := do
           env := ← getAugmentedEnv
         }
 
-/-- A facet to generate the blueprint for each library in a package. -/
+/-- A facet to extract the blueprint for each library in a package. -/
 package_facet blueprint (pkg : Package) : Unit := do
   let libJobs := Job.collectArray <| ← pkg.leanLibs.mapM (fetch <| ·.facet `blueprint)
   let _ ← libJobs.await
   return .nil
 
-/-- A facet to generate the blueprint JSON data for each library in a package. -/
+/-- A facet to extract the blueprint JSON data for each library in a package. -/
 package_facet blueprintJson (pkg : Package) : Unit := do
   let libJobs := Job.collectArray <| ← pkg.leanLibs.mapM (fetch <| ·.facet `blueprintJson)
   let _ ← libJobs.await
@@ -110,11 +110,11 @@ private def runCmd (cmd : String) (args : Array String) : ScriptM Unit := do
   if exitCode != 0 then
     throw <| IO.userError s!"Error running command {cmd} {args.toList}"
 
-/-- A script to convert an existing blueprint to blueprint-gen format,
+/-- A script to convert an existing blueprint to lean-architect format,
 modifying the Lean and LaTeX source files in place. -/
 script blueprintConvert (args : List String) do
-  let blueprintGen ← BlueprintGen.get
-  let convertScript := blueprintGen.srcDir / "scripts" / "convert" / "main.py"
+  let architect ← Architect.get
+  let convertScript := architect.srcDir / "scripts" / "convert" / "main.py"
   let libs := (← getRootPackage).leanLibs
   let rootMods := libs.flatMap (·.rootModules)
   if h : rootMods.size = 0 then
@@ -123,7 +123,7 @@ script blueprintConvert (args : List String) do
   else  -- this else is needed for rootMods[0] to work
   for lib in libs do
     runCmd (← getLake).toString #["build", lib.name.toString]
-  IO.eprintln "Calling Python script to convert blueprint to blueprint-gen format"
+  IO.eprintln "Calling Python script to convert blueprint to lean-architect format"
   runCmd "python3" <|
     #[convertScript.toString] ++
     #["--libraries"] ++ libs.map (·.name.toString) ++

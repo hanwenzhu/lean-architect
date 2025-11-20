@@ -96,7 +96,7 @@ def modify_source(node: Node, file: Path, location: DeclarationLocation, add_use
 
 
 def add_blueprint_gen_import(file: Path):
-    """Adds `import BlueprintGen` before the first import in the file."""
+    """Adds `import Architect` before the first import in the file."""
     source = file.read_text()
     lines = source.splitlines(keepends=True)
     first_import_index = 0
@@ -104,7 +104,7 @@ def add_blueprint_gen_import(file: Path):
         if line.startswith("import ") or line.startswith("public import "):
             first_import_index = i
             break
-    lines = lines[:first_import_index] + ["import BlueprintGen\n"] + lines[first_import_index:]
+    lines = lines[:first_import_index] + ["import Architect\n"] + lines[first_import_index:]
     source = "".join(lines)
     file.write_text(source)
 
@@ -204,7 +204,7 @@ def write_blueprint_attributes(nodes: list[NodeWithPos], modules: list[str], roo
             f"Outputting some nodes to\n  {extra_nodes_file}\n" +
             "You may want to move them to appropriate locations."
         )
-        imports = "import BlueprintGen"
+        imports = "import Architect"
         if extra_nodes_file.exists():
             existing = extra_nodes_file.read_text()
         else:

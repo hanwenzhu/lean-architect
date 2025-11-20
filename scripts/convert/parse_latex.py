@@ -113,7 +113,7 @@ def convert_ref_to_verb(source: str, label_to_node: dict[str, Node]):
 
     This is so that in the output, [\[long_theorem_name\]](#long_theorem_name) becomes
     `long_theorem_name` instead, and the latter can be automatically converted to
-    links/refs by both doc-gen4 and blueprint-gen.
+    links/refs by both doc-gen4 and lean-architect.
     """
     def replace_ref(match):
         labels = [label.strip() for label in match.group(1).split(",")]

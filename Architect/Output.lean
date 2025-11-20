@@ -1,10 +1,10 @@
-import BlueprintGen.Content
+import Architect.Content
 import MD4Lean
 
 
 open Lean
 
-namespace BlueprintGen
+namespace Architect
 
 section ToLatex
 
@@ -32,7 +32,7 @@ The output provides the following macros:
 - `\inputleannode{name}`: Inputs the theorem or definition with Lean name `name`.
 - `\inputleanmodule{Module}`: Inputs the entire module (containing nodes and module docstrings) with module name `Module`.s
 
-The long-term goal for blueprint-gen is to migrate to Verso
+The long-term goal for lean-architect is to migrate to Verso
 and not have to output to LaTeX at all.
 Here, this would mean using docstring parsing from Verso instead
 (which similarly uses MD4Lean to parse the docstrings),
@@ -145,7 +145,7 @@ where
       return "\n\\\\\n".intercalate lines
     | .html content => return String.join content.toList
     | .blockquote content => return "\\begin{quote}" ++ "\n\n".intercalate (← content.mapM blockToLatex).toList ++ "\\end{quote}"
-    | .table _head _body => return "[blueprint-gen: table not supported yet]"
+    | .table _head _body => return "[lean-architect: table not supported yet]"
   textToLatex (text : MD4Lean.Text) : m Latex := do
     match text with
     | .normal content | .br content | .softbr content | .entity content =>
@@ -404,4 +404,4 @@ def outputLibraryJson (basePath : System.FilePath) (library : Name) (modules : A
     FS.createDirAll d
   FS.writeFile filePath content
 
-end BlueprintGen
+end Architect

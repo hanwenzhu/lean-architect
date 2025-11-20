@@ -1,7 +1,7 @@
-import BlueprintGen.Output
+import Architect.Output
 
 
-namespace BlueprintGen
+namespace Architect
 
 /-!
 Loading the analysis result of a module.
@@ -38,4 +38,4 @@ def latexOfImportModule (module : Name) (options : Options) : IO Latex :=
 def jsonOfImportModule (module : Name) (options : Options) : IO Json :=
   runEnvOfImports #[module] options (moduleToJson module)
 
-end BlueprintGen
+end Architect

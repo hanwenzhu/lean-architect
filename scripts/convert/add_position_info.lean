@@ -1,4 +1,4 @@
-import BlueprintGen.Load
+import Architect.Load
 import Cli
 
 
@@ -6,7 +6,7 @@ open Lean
 
 /-! This file contains utilities for porting from an existing LaTeX blueprint. -/
 
-open Lean Cli BlueprintGen
+open Lean Cli Architect
 
 def runAddPositionInfo (p : Parsed) : IO UInt32 := do
   let some imports := p.flag? "imports" |>.bind (·.as? (Array ModuleName))

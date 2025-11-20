@@ -1,8 +1,13 @@
-import BlueprintGen
+import Architect
 import Lean
 import Cli
 
-open Lean Cli BlueprintGen
+/-!
+This executable extracts the blueprint data from a module, or
+collates the blueprint data from multiple modules into a LaTeX file.
+-/
+
+open Lean Cli Architect
 
 def outputBaseDir (buildDir : System.FilePath) : System.FilePath :=
   buildDir / "blueprint"
@@ -41,7 +46,7 @@ def runIndexCmd (p : Parsed) : IO UInt32 := do
 
 def singleCmd := `[Cli|
   single VIA runSingleCmd;
-  "Only generate the blueprint for the module it was given, might contain broken \\input{}s unless all blueprint files are generated."
+  "Only extract the blueprint for the module it was given, might contain broken \\input{}s unless all blueprint files are extracted."
 
   FLAGS:
     j, json; "Output JSON instead of LaTeX."
@@ -49,7 +54,7 @@ def singleCmd := `[Cli|
     o, options : String; "LeanOptions in JSON to pass to running the module."
 
   ARGS:
-    module : String; "The module to generate the blueprint for."
+    module : String; "The module to extract the blueprint for."
 ]
 
 def indexCmd := `[Cli|
@@ -66,7 +71,7 @@ def indexCmd := `[Cli|
 ]
 
 def blueprintCmd : Cmd := `[Cli|
-  "blueprint-gen" NOOP;
+  "lean-architect" NOOP;
   "A blueprint generator for Lean 4."
 
   SUBCOMMANDS:

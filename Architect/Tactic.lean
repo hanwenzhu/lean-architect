@@ -1,11 +1,11 @@
 import Lean
 import Batteries.Lean.NameMapAttribute
-import BlueprintGen.Basic
+import Architect.Basic
 
 
 open Lean Elab Tactic Meta
 
-namespace BlueprintGen
+namespace Architect
 
 namespace ProofDocString
 
@@ -94,4 +94,4 @@ elab (name := tacticSorryUsing) "sorry_using" " [" ids:ident,* "]" : tactic => d
 macro (name := termSorryUsing) "sorry_using" " [" ids:ident,* "]" : term =>
   `(term| by sorry_using [$[$ids],*])
 
-end BlueprintGen
+end Architect

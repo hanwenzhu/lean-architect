@@ -1,12 +1,12 @@
 import Lean
-import BlueprintGen.CollectUsed
-import BlueprintGen.Content
-import BlueprintGen.Tactic
+import Architect.CollectUsed
+import Architect.Content
+import Architect.Tactic
 
 
 open Lean Meta Elab
 
-namespace BlueprintGen
+namespace Architect
 
 /-- `Config` is the type of arguments that can be provided to `blueprint`. -/
 structure Config where
@@ -67,7 +67,7 @@ You may optionally add:
 - `discussion := 123`: The discussion issue number of the node.
 - `latexEnv := "lemma"`: The LaTeX environment to use for the node (default: "theorem" or "definition").
 
-For more information, see [blueprint-gen](https://github.com/hanwenzhu/blueprint-gen).
+For more information, see [lean-architect](https://github.com/hanwenzhu/lean-architect).
 
 Use `blueprint?` to show the raw data of the added node.
 -/
@@ -214,4 +214,4 @@ initialize registerBuiltinAttribute {
       --   stx, expr := mkStrLit (repr node).pretty }
   }
 
-end BlueprintGen
+end Architect

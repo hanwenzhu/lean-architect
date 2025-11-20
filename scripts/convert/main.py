@@ -14,7 +14,7 @@ from modify_lean import write_blueprint_attributes
 
 
 def main():
-    parser = argparse.ArgumentParser(description="Convert existing leanblueprint file to blueprint-gen format.")
+    parser = argparse.ArgumentParser(description="Convert existing leanblueprint file to lean-architect format.")
     parser.add_argument(
         "--libraries",
         nargs="*",

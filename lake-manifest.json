@@ -31,5 +31,5 @@
    "inputRev": "v4.24.0",
    "inherited": false,
    "configFile": "lakefile.toml"}],
- "name": "«blueprint-gen»",
+ "name": "«lean-architect»",
  "lakeDir": ".lake"}

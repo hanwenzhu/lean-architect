@@ -4,7 +4,7 @@ import Batteries.Lean.NameMapAttribute
 
 open Lean Elab
 
-namespace BlueprintGen
+namespace Architect
 
 initialize registerTraceClass `blueprint
 
@@ -90,4 +90,4 @@ def tryResolveConst (id : Ident) : CoreM Name := do
 
 end ResolveConst
 
-end BlueprintGen
+end Architect

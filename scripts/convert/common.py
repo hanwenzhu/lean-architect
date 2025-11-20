@@ -22,7 +22,7 @@ class BaseSchema(BaseModel):
         populate_by_name=True,
     )
 
-# These classes are ported from BlueprintGen/Basic.lean
+# These classes are ported from Architect/Basic.lean
 
 class NodePart(BaseSchema):
     lean_ok: bool
@@ -60,7 +60,7 @@ class Node(BaseSchema):
         add_proof_text: bool = True, add_proof_uses: bool = True, add_proof_uses_raw: bool = True
     ) -> str:
         configs = []
-        # See BlueprintGen/Attribute.lean for the options
+        # See Architect/Attribute.lean for the options
         if self.title:
             configs.append(_quote(self.title))
         if add_statement_text and self.statement.text.strip():
